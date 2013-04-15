@@ -5,3 +5,7 @@
 .nice-padding {
 	padding: 15px;
 }
+
+.error-message {
+    color: red;
+}
