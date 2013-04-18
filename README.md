@@ -1,6 +1,4 @@
-bootplate
-=========
+Contacts
+========
 
-Application template for packaged Enyo
-
-Refer to the [Wiki](https://github.com/enyojs/enyo/wiki/Bootplate) for how to get started.
+Store your contacts' name & email in your remotestorage. That's it.
