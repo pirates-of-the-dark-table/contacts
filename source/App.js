@@ -10,6 +10,8 @@ enyo.kind({
 
 	components: [
 
+    { id: "remotestorage-connect" },
+
     /* TOP TOOLBAR */
 		{ kind: "onyx.Toolbar", content: "Contacts" },
 
@@ -34,15 +36,6 @@ enyo.kind({
       onSearch: "filterList"
     }
 
-		// {
-    //   kind: "onyx.Toolbar",
-    //   name: "addContactToolbar",
-    //   components: [
-		// 	  { kind: "onyx.Button", content: "Save", ontap: "saveAddDialog" },
-		// 	  { kind: "onyx.Button", content: "Cancel", ontap: "cancelAddDialog" }
-		//   ]
-    // }
-
 	],
 
   /**
@@ -51,15 +44,18 @@ enyo.kind({
 
   create: function() {
     this.inherited(arguments);
-    console.log('creating, this', this);
     remoteStorage.claimAccess('contacts', 'rw');
     remoteStorage.contacts.init();
-    remoteStorage.displayWidget();
     this.refreshContacts = this.refreshContacts.bind(this);
     remoteStorage.on('ready', this.refreshContacts);
     remoteStorage.on('disconnect', this.refreshContacts);
     this.refreshContacts();
     this._closeAddDialog();
+  },
+
+  rendered: function() {
+    this.inherited(arguments);
+    remoteStorage.displayWidget('remotestorage-connect');
   },
 
   selectContact: function(inSender, inEvent) {
@@ -70,8 +66,6 @@ enyo.kind({
     this.$.contactList.hide();
     this.$.addDialog.show();
     this.$.contactsToolbar.setState('edit');
-    //this.$.mainToolbar.hide();
-    //this.$.addContactToolbar.show();
   },
 
   saveAddDialog: function() {
@@ -93,8 +87,6 @@ enyo.kind({
     this.$.contactList.show();
     this.$.addDialog.hide();
     this.$.contactsToolbar.setState('list');
-    //this.$.addContactToolbar.hide();
-    //this.$.mainToolbar.show();
   },
 
   loadContact: function(inSender, inEvent) {
