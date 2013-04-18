@@ -13,58 +13,35 @@ enyo.kind({
     /* TOP TOOLBAR */
 		{ kind: "onyx.Toolbar", content: "Contacts" },
 
-    /* SCROLLER */
+    /* MAIN */
 		{
-      kind: "enyo.Scroller",
       fit: true,
+      name: "main",
+      classes: "nice-padding app-panels",
+      kind: "Scroller",
       components: [
-        /* MAIN */
-			  {
-          name: "main",
-          classes: "nice-padding",
-          allowHtml: true,
-          components: [
-            /* CONTACT LIST */
-            {
-              kind: "List",
-              count: 0,
-              onSetupItem: "loadContact",
-              classes: "list",
-              components: [
-                /* LIST ITEM */
-                {
-                  classes: "item", ontap: "contactTap", components: [
-                    { name: "displayName" }
-                  ]
-                }
-              ]
-            },
-
-            {
-              kind: "AddDialog"
-            }
-          ]
-        }
-		  ]
+        { kind: "ContactList", onSetupItem: "loadContact", onSelect: "selectContact" },
+        { kind: "AddDialog" }
+      ]
     },
 
     /* BOTTOM TOOLBAR(s) */
 		{
-      kind: "onyx.Toolbar",
-      name: "mainToolbar",
-      components: [
-			  { kind: "onyx.Button", content: "Add", ontap: "showAddDialog" }
-		  ]
-    },
-
-		{
-      kind: "onyx.Toolbar",
-      name: "addContactToolbar",
-      components: [
-			  { kind: "onyx.Button", content: "Save", ontap: "saveAddDialog" },
-			  { kind: "onyx.Button", content: "Cancel", ontap: "cancelAddDialog" }
-		  ]
+      kind: "ContactsToolbar",
+      onAdd: "showAddDialog",
+      onSave: "saveAddDialog",
+      onCancel: "cancelAddDialog",
+      onSearch: "filterList"
     }
+
+		// {
+    //   kind: "onyx.Toolbar",
+    //   name: "addContactToolbar",
+    //   components: [
+		// 	  { kind: "onyx.Button", content: "Save", ontap: "saveAddDialog" },
+		// 	  { kind: "onyx.Button", content: "Cancel", ontap: "cancelAddDialog" }
+		//   ]
+    // }
 
 	],
 
@@ -74,13 +51,7 @@ enyo.kind({
 
   create: function() {
     this.inherited(arguments);
-    this.$.addDialog.hide();
-    this.$.addContactToolbar.hide();
-  },
-
-  rendered: function() {
-    this.inherited(arguments);
-
+    console.log('creating, this', this);
     remoteStorage.claimAccess('contacts', 'rw');
     remoteStorage.contacts.init();
     remoteStorage.displayWidget();
@@ -88,38 +59,19 @@ enyo.kind({
     remoteStorage.on('ready', this.refreshContacts);
     remoteStorage.on('disconnect', this.refreshContacts);
     this.refreshContacts();
+    this._closeAddDialog();
   },
 
-  loadContact: function(inSender, inEvent) {
-    var path = this.contactPathList[inEvent.index];
-    remoteStorage.contacts.get(path).then(function(contact) {
-      console.log('setContent', contact.fn);
-      this.setContent(contact.fn);
-    }.bind(this.$.displayName));
-  },
-
-  contactTap: function(inSender, inEvent) {
-    console.log("clicked: " + this.$.displayName.content);
-  },
-
-  refreshContacts: function() {
-    var $ = this.$;
-    $.list.setCount(0);
-    $.list.reset();
-    remoteStorage.contacts.list().
-      then(function(paths) {
-        console.log('paths', paths);
-        this.contactPathList = paths;
-        $.list.setCount(paths.length);
-        $.list.reset();
-      }.bind(this));
+  selectContact: function(inSender, inEvent) {
+    console.log('select', arguments);
   },
 
   showAddDialog: function() {
-    this.$.list.hide();
+    this.$.contactList.hide();
     this.$.addDialog.show();
-    this.$.mainToolbar.hide();
-    this.$.addContactToolbar.show();
+    this.$.contactsToolbar.setState('edit');
+    //this.$.mainToolbar.hide();
+    //this.$.addContactToolbar.show();
   },
 
   saveAddDialog: function() {
@@ -128,16 +80,29 @@ enyo.kind({
       then(this.refreshContacts.bind(this));
   },
 
+  refreshContacts: function() {
+    this.$.contactList.reload();
+  },
+
   cancelAddDialog: function() {
     this.$.addDialog.cancel();
     this._closeAddDialog();
   },
 
   _closeAddDialog: function() {
-    this.$.list.show();
+    this.$.contactList.show();
     this.$.addDialog.hide();
-    this.$.addContactToolbar.hide();
-    this.$.mainToolbar.show();
+    this.$.contactsToolbar.setState('list');
+    //this.$.addContactToolbar.hide();
+    //this.$.mainToolbar.show();
+  },
+
+  loadContact: function(inSender, inEvent) {
+    this.$.contactList.loadContact(inSender, inEvent);
+  },
+
+  filterList: function(inSender, inEvent) {
+    this.$.contactList.filter(inEvent.query);
   }
 
 });

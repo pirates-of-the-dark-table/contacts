@@ -2,10 +2,31 @@
 	Put anything you reference with "url()" in ../assets/
 	This way, you can minify your application, and just remove the "source" folder for production
 */
-.nice-padding {
+.nice-padding > * {
 	padding: 15px;
 }
 
 .error-message {
     color: red;
+}
+
+/* set the width and some basic styling for each panel */
+.app-panels > * {
+    background-color: #5C5A5A;
+}
+
+/* on small devices, make each panel fit to the app width */
+@media all and (max-width: 800px) {
+    .app-panels > * {
+        min-width: 100%;
+        max-width: 100%;
+    }
+}
+
+input:focus {
+    color: #3A3A3A;
+}
+
+input {
+    color: #ddd;
 }

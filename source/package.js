@@ -9,7 +9,9 @@ enyo.depends(
 
   // custom kinds
   "InputDecorator.js",
+  "ContactsToolbar.js",
 	"AddDialog.js",
+  "ContactList.js",
 
   // app
 	"App.css",
