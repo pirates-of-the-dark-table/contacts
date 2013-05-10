@@ -19,21 +19,24 @@ enyo.kind({
 		{
       fit: true,
       name: "main",
-      classes: "nice-padding app-panels",
+      classes: "app-panels",
       kind: "Scroller",
       components: [
         { kind: "ContactList", onSetupItem: "loadContact", onSelect: "selectContact" },
-        { kind: "AddDialog" }
+        { kind: "AddDialog", onSaved: "contactSaved" },
+        { kind: "ContactDetails" }
       ]
     },
 
     /* BOTTOM TOOLBAR(s) */
 		{
       kind: "ContactsToolbar",
+
       onAdd: "showAddDialog",
       onSave: "saveAddDialog",
-      onCancel: "cancelAddDialog",
-      onSearch: "filterList"
+      onDone: "cancelAddDialog",
+      onSearch: "filterList",
+      onClose: "closeContactDetails"
     }
 
 	],
@@ -50,7 +53,7 @@ enyo.kind({
     remoteStorage.on('ready', this.refreshContacts);
     remoteStorage.on('disconnect', this.refreshContacts);
     this.refreshContacts();
-    this._closeAddDialog();
+    this.closeAddDialog();
   },
 
   rendered: function() {
@@ -59,7 +62,8 @@ enyo.kind({
   },
 
   selectContact: function(inSender, inEvent) {
-    console.log('select', arguments);
+    this.$.contactDetails.setContact(this.$.contactList.selectedContact);
+    this.showContactDetails();
   },
 
   showAddDialog: function() {
@@ -69,9 +73,11 @@ enyo.kind({
   },
 
   saveAddDialog: function() {
-    this.$.addDialog.save().
-      then(this._closeAddDialog.bind(this)).
-      then(this.refreshContacts.bind(this));
+    this.$.addDialog.save();
+  },
+
+  contactSaved: function() {
+    this.refreshContacts();
   },
 
   refreshContacts: function() {
@@ -80,13 +86,27 @@ enyo.kind({
 
   cancelAddDialog: function() {
     this.$.addDialog.cancel();
-    this._closeAddDialog();
+    this.closeAddDialog();
   },
 
-  _closeAddDialog: function() {
+  closeAddDialog: function() {
     this.$.contactList.show();
     this.$.addDialog.hide();
     this.$.contactsToolbar.setState('list');
+    this.refreshContacts();
+  },
+
+  showContactDetails: function() {
+    this.$.contactList.hide();
+    this.$.contactDetails.show();
+    this.$.contactsToolbar.setState('details');
+  },
+
+  closeContactDetails: function() {
+    this.$.contactList.show();
+    this.$.contactDetails.hide();
+    this.$.contactsToolbar.setState('list');
+    this.refreshContacts();
   },
 
   loadContact: function(inSender, inEvent) {

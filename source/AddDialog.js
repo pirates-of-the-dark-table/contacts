@@ -4,14 +4,19 @@ enyo.kind({
   fit: true,
 
   components: [
+    {kind: enyo.Signals, onkeyup: "_handleKeyPress"},
     {kind: "InputDecorator", components: [
-      {kind: "onyx.Input", name: "fn", placeholder: "Full name"}
+      {kind: "onyx.Input", name: "fn", placeholder: "Full name", onkeyup: "_handleKeyPress"}
     ]},
     {tag: "br"},
     {kind: "InputDecorator", components: [
-      {kind: "onyx.Input", name: "email", placeholder: "Email"}
+      {kind: "onyx.Input", name: "email", placeholder: "Email", onkeyup: "_handleKeyPress"}
     ]}
   ],
+
+  events: {
+    "onSaved": ""
+  },
 
   show: function() {
     this.inherited(arguments);
@@ -19,18 +24,25 @@ enyo.kind({
   },
 
   save: function() {
-    return remoteStorage.util.getPromise(function(promise) {
-      remoteStorage.contacts.add(this._inputValues()).
-        then(promise.fulfill, promise.reject);
-    }.bind(this)).then(this._clearInputs.bind(this), function(error) {
-      this._displayErrors(error.errors);
-      throw error;
-    }.bind(this));
+    var attributes = this._inputValues();
+    var errors = remoteStorage.contacts.validate(attributes);
+    console.log('errors', errors);
+    if(errors) {
+      this._displayErrors(errors);
+    } else {
+      this._clearInputs();
+      return remoteStorage.contacts.add(attributes).then(this.doSaved.bind(this));
+    }
   },
 
   cancel: function() {
-    console.log('CANCEL');
     this._clearInputs();
+  },
+
+  _handleKeyPress: function(inSender, inEvent) {
+    if(this.showing && inEvent.keyCode === 13) {
+      this.save();
+    }
   },
 
   _clearInputs: function() {

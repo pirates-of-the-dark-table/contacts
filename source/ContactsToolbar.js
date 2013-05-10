@@ -8,14 +8,16 @@ enyo.kind({
     ]},
 		{kind: "onyx.Button", content: "Add", ontap: "doAdd", name: "add"},
 		{kind: "onyx.Button", content: "Save", ontap: "doSave", name: "save"},
-		{kind: "onyx.Button", content: "Cancel", ontap: "doCancel", name: "cancel"}
+		{kind: "onyx.Button", content: "Done", ontap: "doDone", name: "done"},
+		{kind: "onyx.Button", content: "Close", ontap: "doClose", name: "close"}
 	],
 
   events: {
-    "onAdd": "",
-    "onSave": "",
-    "onCancel": "",
-    "onSearch": ""
+    "onAdd": "", // switch to "add dialog"
+    "onSave": "", // save current "add dialog"
+    "onDone": "", // close "add dialog"
+    "onSearch": "", // query changed
+    "onClose": "" // close "details"
   },
 
   setState: function(state) {
@@ -24,7 +26,10 @@ enyo.kind({
       this._setVisible('add', 'searchBox');
       break;
     case "edit":
-      this._setVisible('save', 'cancel');
+      this._setVisible('save', 'done');
+      break;
+    case 'details':
+      this._setVisible('close');
       break;
     default:
       throw "Unknown state: " + state;

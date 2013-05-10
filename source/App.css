@@ -2,9 +2,6 @@
 	Put anything you reference with "url()" in ../assets/
 	This way, you can minify your application, and just remove the "source" folder for production
 */
-.nice-padding > * {
-	padding: 15px;
-}
 
 .error-message {
     color: red;
@@ -29,4 +26,15 @@ input:focus {
 
 input {
     color: #ddd;
+}
+
+.contact-row {
+    color: #ddd;
+    padding: 5px;
+
+    border-top: solid 1px #ccc;
+}
+
+#app_contactList_generator_client:first-child /* (sorry) */ .contact-row {
+    border-top: none;
 }

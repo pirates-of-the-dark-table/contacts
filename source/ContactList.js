@@ -4,11 +4,12 @@ enyo.kind({
   kind: "List",
   count: 0,
   classes: "list",
+  noSelect: true,
   components: [
     {
-      classes: "item", ontap: "doSelect", components: [
+      classes: "item", ontap: "_doSelect", components: [
         { name: "displayName" }
-      ]
+      ], classes: "contact-row"
     }
   ],
 
@@ -19,6 +20,14 @@ enyo.kind({
   create: function() {
     this.inherited(arguments);
     this.renderCache = {};
+  },
+
+  _doSelect: function(inSender, inEvent) {
+    remoteStorage.contacts.get(this.contactIdList[inEvent.index]).
+      then(function(contact) {
+        this.selectedContact = contact;
+        this.doSelect();
+      }.bind(this));
   },
 
   loadContact: function(inSender, inEvent) {

@@ -169,9 +169,12 @@ remoteStorage.defineModule('contacts', function(privateClient, publicClient) {
   return {
     exports: {
 
-      // stub for future usage.
-      // apps should call this.
-      init: function() {},
+      init: function() {
+        publicClient.release('');
+        privateClient.release('');
+        privateClient.use('card/');
+        privateClient.use('index/');
+      },
 
       on: privateClient.on,
 
@@ -187,22 +190,29 @@ remoteStorage.defineModule('contacts', function(privateClient, publicClient) {
         return privateClient.getListing('card/');
       },
 
-      add: function (contact) {
-        console.log('saving', contact);
-
+      add: function (contact) {try{
         contact.id = privateClient.uuid();
 
         return privateClient.storeObject("contact", "card/" + contact.id, contact).
           then(function() {
-            return indexContact(contact)
-          }).then(undefined, function(error) {
+            // add() doesn't have to wait until the contact is indexed, but can
+            // return immediately.
+            indexContact(contact);
+          }, function(error) {
             console.log('error storing contact: ', error);
             throw error;
-          });
+          })
+      }catch(exc){console.log('exc', exc);}},
+
+      validate: function(contact) {
+        return privateClient.validateObject(
+          "@context" in contact ?
+            contact :
+            privateClient.buildObject('contact', contact)
+        );
       },
 
       get: function (uuid) {
-        console.log('getObject', 'card/' + uuid);
         return privateClient.getObject("card/" + uuid);
       },
 
@@ -217,10 +227,8 @@ remoteStorage.defineModule('contacts', function(privateClient, publicClient) {
         return queryIndex('contact', query, 'fn');
       },
 
-      highlightNgrams: function(query, _text, highlighter) {
-        return ngramize(query).reduce(function(text, ngram) {
-          return text.replace(new RegExp(ngram, 'gi'), highlighter);
-        }, _text);
+      highlightNgrams: function(query, text, highlighter) {
+        return text.replace(new RegExp('(?:' + ngramize(query).join('|') + ')', 'gi'), highlighter);
       },
 
       rebuildIndex: function() {

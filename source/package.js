@@ -12,6 +12,7 @@ enyo.depends(
   "ContactsToolbar.js",
 	"AddDialog.js",
   "ContactList.js",
+  "ContactDetails.js",
 
   // app
 	"App.css",
